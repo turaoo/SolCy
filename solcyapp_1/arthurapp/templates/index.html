@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolCy — Threat Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080b12;
+  --surface:  #0f1420;
+  --border:   #1e2535;
+  --accent:   #e63946;
+  --accent2:  #f4a261;
+  --text:     #e8eaf0;
+  --muted:    #6b7280;
+  --green:    #2ecc71;
+  --yellow:   #f59e0b;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Nav ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,11,18,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--text); }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #c1121f; transform: translateY(-1px); }
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Hero ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(230,57,70,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.3);
+  color: var(--accent);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.hero h1 {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+  position: relative;
+}
+.hero p {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.hero-cta {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.hero-stats {
+  display: flex; gap: 3rem; justify-content: center; margin-top: 4rem;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.hero-stat .n {
+  font-family: 'Space Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.hero-stat .l { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+/* ── Upload demo section ── */
+.upload-section {
+  padding: 5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.upload-box {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.upload-box:hover, .upload-box.drag {
+  border-color: var(--accent);
+  background: rgba(230,57,70,0.05);
+}
+.upload-icon { font-size: 3rem; margin-bottom: 1rem; }
+.upload-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.upload-box p { color: var(--muted); font-size: 0.9rem; }
+#file-input { display: none; }
+
+/* ── Result card ── */
+#result-card {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+.sev-high   { color: #e63946; }
+.sev-medium { color: #f59e0b; }
+.sev-low    { color: #2ecc71; }
+.result-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.sev-badge-lg {
+  padding: 6px 18px; border-radius: 100px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem; font-weight: 700;
+}
+.badge-HIGH   { background: rgba(230,57,70,0.15);  color: #e63946; }
+.badge-MEDIUM { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.badge-LOW    { background: rgba(46,204,113,0.15); color: #2ecc71; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.result-item { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.75rem 1rem; }
+.result-item .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.result-item .val { font-size: 0.9rem; font-weight: 600; word-break: break-all; }
+.hash-block { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.hash-row { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 6px; font-size: 0.8rem; }
+.hash-lbl { min-width: 55px; color: var(--muted); font-size: 0.7rem; }
+.hash-val { font-family: 'Space Mono', monospace; color: #a8d8ff; word-break: break-all; font-size: 0.75rem; }
+.families-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.family-tag {
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.3);
+  color: var(--accent);
+  padding: 4px 12px; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 600;
+}
+.verdict-box {
+  background: rgba(230,57,70,0.08);
+  border-left: 3px solid var(--accent);
+  padding: 1rem; border-radius: 0 8px 8px 0;
+  font-size: 0.9rem; margin-bottom: 1rem;
+}
+.download-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.loading { display: none; text-align: center; padding: 2rem; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Features ── */
+.features {
+  padding: 6rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.section-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.section-sub { color: var(--muted); max-width: 500px; margin-bottom: 3rem; }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.feature-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.feature-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+.feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.feature-card p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+/* ── Pricing ── */
+.pricing-section {
+  padding: 6rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; text-align: left; }
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  position: relative;
+  transition: transform 0.2s;
+}
+.plan-card:hover { transform: translateY(-4px); }
+.plan-card.featured {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(230,57,70,0.08) 0%, var(--surface) 100%);
+}
+.plan-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff;
+  padding: 4px 16px; border-radius: 100px;
+  font-size: 0.75rem; font-weight: 700;
+}
+.plan-name { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.plan-price { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.plan-price span { font-size: 1rem; color: var(--muted); }
+.plan-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+.plan-features { list-style: none; margin-bottom: 2rem; }
+.plan-features li {
+  font-size: 0.875rem; padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── Login required overlay ── */
+.login-prompt {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(8,11,18,0.92);
+  backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+}
+.login-prompt.show { display: flex; }
+.prompt-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+.prompt-box h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; }
+.prompt-box p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+.prompt-box .btn-row { display: flex; gap: 0.75rem; justify-content: center; }
+
+@media (max-width: 768px) {
+  .features-grid, .pricing-grid, .result-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.5rem; }
+  .nav-links { gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">SOL<span>CY</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    {% if user %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Sign In</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started Free</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag">Threat Intelligence Platform</div>
+  <h1>Find threats before<br>they find <em>you</em></h1>
+  <p>Upload any file. Get a full threat report in seconds — hashes, malware classification, VirusTotal cross-check, IOC extraction, and a plain-English verdict.</p>
+  <div class="hero-cta">
+    <a href="{{ url_for('register') if not user else url_for('dashboard') }}" class="btn btn-primary">Start Scanning Free</a>
+    <a href="#features" class="btn btn-outline">See How It Works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="n">13+</div><div class="l">Malware Families</div></div>
+    <div class="hero-stat"><div class="n">70+</div><div class="l">AV Engines via VT</div></div>
+    <div class="hero-stat"><div class="n">3</div><div class="l">Threat Intel Sources</div></div>
+  </div>
+</section>
+
+<!-- Quick scan demo -->
+<div class="upload-section">
+  <div class="upload-box" id="drop-zone" onclick="triggerUpload()">
+    <div class="upload-icon">🛡️</div>
+    <h3>Drop a file to scan it</h3>
+    <p>PDF, EXE, DLL, scripts, archives — any file up to 50 MB<br>No file is stored after analysis</p>
+    <input type="file" id="file-input" accept="*/*">
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="color:var(--muted)">Analyzing file...</p>
+  </div>
+
+  <div id="result-card">
+    <div class="result-header">
+      <div>
+        <div id="result-filename" style="font-weight:700;font-size:1.1rem;margin-bottom:4px"></div>
+        <span id="result-badge" class="sev-badge-lg"></span>
+      </div>
+    </div>
+    <div class="verdict-box" id="result-verdict"></div>
+    <div class="families-list" id="result-families"></div>
+    <div class="result-grid">
+      <div class="result-item"><div class="lbl">File Type</div><div class="val" id="res-type"></div></div>
+      <div class="result-item"><div class="lbl">Entropy</div><div class="val" id="res-entropy"></div></div>
+      <div class="result-item"><div class="lbl">Indicators Found</div><div class="val" id="res-indicators"></div></div>
+      <div class="result-item"><div class="lbl">VirusTotal</div><div class="val" id="res-vt"></div></div>
+    </div>
+    <div class="hash-block">
+      <div class="hash-row"><span class="hash-lbl">MD5</span><span class="hash-val" id="res-md5"></span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-1</span><span class="hash-val" id="res-sha1"></span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-256</span><span class="hash-val" id="res-sha256"></span></div>
+    </div>
+    <div class="download-row" id="download-row"></div>
+  </div>
+</div>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="section-tag">What's included</div>
+  <h2 class="section-title">Everything you need to<br>analyze a threat</h2>
+  <p class="section-sub">No setup. No command line. Upload a file and get a professional-grade report in seconds.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Cryptographic Hashing</h3>
+      <p>MD5, SHA-1, and SHA-256 hashes computed instantly. Cross-check any hash on VirusTotal or MalwareBazaar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧬</div>
+      <h3>Malware Classification</h3>
+      <p>Identifies 13 malware families — ransomware, infostealers, RATs, worms, rootkits, droppers, and more.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>VirusTotal Integration</h3>
+      <p>Hash lookup across 70+ antivirus engines. Get detection names, tags, and a direct link to the full report.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗄️</div>
+      <h3>MalwareBazaar</h3>
+      <p>Cross-references against the abuse.ch malware database. Confirms known malware samples instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📡</div>
+      <h3>IOC Extraction</h3>
+      <p>Automatically pulls IPs, URLs, domains, and embedded hashes from file content for threat hunting.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Obfuscation Detection</h3>
+      <p>Catches base64 blobs, PowerShell encoding, hex payloads, XOR patterns, and Chr() obfuscation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Entropy Analysis</h3>
+      <p>Per-section entropy scoring for PE files. High entropy flags packed or encrypted payloads.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>PDF & HTML Reports</h3>
+      <p>Professional reports you can share with your team or attach to a security incident ticket.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <h3>Scan History Dashboard</h3>
+      <p>All past scans saved and searchable. Severity breakdown, trends, and full report access anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing-section" id="pricing">
+  <div class="section-tag">Pricing</div>
+  <h2 class="section-title">Simple, honest pricing</h2>
+  <p style="color:var(--muted)">No hidden fees. Cancel anytime.</p>
+  <div class="pricing-grid">
+    {% for key, plan in plans.items() %}
+    <div class="plan-card {% if key == 'pro' %}featured{% endif %}">
+      {% if key == 'pro' %}<div class="plan-badge">Most Popular</div>{% endif %}
+      <div class="plan-name">{{ plan.name }}</div>
+      <div class="plan-price">
+        {% if plan.price == 0 %}$0{% else %}${{ plan.price }}{% endif %}
+        <span>{% if plan.price > 0 %}/month{% endif %}</span>
+      </div>
+      <div class="plan-desc">
+        {% if key == 'free' %}Perfect for occasional use{% elif key == 'pro' %}For security professionals{% else %}For teams and organizations{% endif %}
+      </div>
+      <ul class="plan-features">
+        {% for feature in plan.features %}
+        <li>{{ feature }}</li>
+        {% endfor %}
+      </ul>
+      {% if user %}
+        {% if user['plan'] == key %}
+          <div class="btn btn-outline" style="width:100%;text-align:center;cursor:default">Current Plan</div>
+        {% else %}
+          <a href="{{ url_for('pricing') }}" class="btn btn-primary" style="width:100%;justify-content:center">
+            {% if plan.price == 0 %}Downgrade{% else %}Upgrade{% endif %}
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary" style="width:100%;justify-content:center">
+          {% if plan.price == 0 %}Get Started Free{% else %}Start {{ plan.name }}{% endif %}
+        </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<footer>
+  <p>SolCy &copy; {{ now.year if now else '2025' }} — Professional Threat Intelligence</p>
+</footer>
+
+<!-- Login prompt overlay -->
+<div class="login-prompt" id="login-prompt">
+  <div class="prompt-box">
+    <h2>Create a free account</h2>
+    <p>Sign up to scan files, view full reports, and track your scan history — free forever for up to 5 scans/month.</p>
+    <div class="btn-row">
+      <a href="{{ url_for('register') }}" class="btn btn-primary">Create Account</a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline">Sign In</a>
+    </div>
+    <button onclick="document.getElementById('login-prompt').classList.remove('show')"
+            style="margin-top:1rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<script>
+let currentStem = null;
+
+function triggerUpload() {
+  {% if not user %}
+    document.getElementById('login-prompt').classList.add('show');
+    return;
+  {% endif %}
+  document.getElementById('file-input').click();
+}
+
+document.getElementById('file-input').addEventListener('change', function(e) {
+  if (e.target.files[0]) uploadFile(e.target.files[0]);
+});
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  {% if not user %}
+    document.getElementById('login-prompt').classList.add('show'); return;
+  {% endif %}
+  if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+});
+
+async function uploadFile(file) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('result-card').style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const resp = await fetch('/scan', { method: 'POST', body: fd });
+    const data = await resp.json();
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (data.error) {
+      alert('Error: ' + data.error); return;
+    }
+
+    currentStem = data.report_stem;
+    document.getElementById('result-filename').textContent = file.name;
+    const badge = document.getElementById('result-badge');
+    badge.textContent = data.severity + ' RISK';
+    badge.className = 'sev-badge-lg badge-' + data.severity;
+    document.getElementById('result-verdict').innerHTML = '<strong>' + data.verdict + '</strong><br>' + data.action;
+    document.getElementById('res-type').textContent = data.file_type;
+    document.getElementById('res-entropy').textContent = data.entropy.toFixed(2) + ' / 8.0' + (data.entropy > 7.2 ? '  ⚠' : '');
+    document.getElementById('res-indicators').textContent = data.indicators + ' found';
+    document.getElementById('res-vt').textContent = data.vt.total ? data.vt.malicious + '/' + data.vt.total + ' engines' : 'Not checked (Pro)';
+    document.getElementById('res-md5').textContent = data.hashes.md5;
+    document.getElementById('res-sha1').textContent = data.hashes.sha1;
+    document.getElementById('res-sha256').textContent = data.hashes.sha256;
+
+    const fl = document.getElementById('result-families');
+    fl.innerHTML = data.families.length
+      ? data.families.map(f => `<span class="family-tag">${f}</span>`).join('')
+      : '<span style="color:var(--green);font-size:.9rem">✓ No malware family matched</span>';
+
+    const dr = document.getElementById('download-row');
+    dr.innerHTML = `<a href="/report/${currentStem}/html" class="btn btn-outline">Download HTML Report</a>`;
+    if (data.pdf_ready) dr.innerHTML += `<a href="/report/${currentStem}/pdf" class="btn btn-primary">Download PDF Report</a>`;
+    if (data.scan_id)   dr.innerHTML += `<a href="/scan/${data.scan_id}" class="btn btn-outline">Full Details</a>`;
+
+    document.getElementById('result-card').style.display = 'block';
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    alert('Upload failed: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>

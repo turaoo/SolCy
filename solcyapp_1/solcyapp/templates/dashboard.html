@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — SolCy</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080b12;--surface:#0f1420;--border:#1e2535;--accent:#e63946;--text:#e8eaf0;--muted:#6b7280;--green:#2ecc71;--yellow:#f59e0b;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);text-decoration:none;}
+.logo span{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:1.5rem;}
+.nav-right a{color:var(--muted);text-decoration:none;font-size:0.875rem;font-weight:600;}
+.nav-right a:hover{color:var(--text);}
+.plan-badge{background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:var(--accent);padding:3px 12px;border-radius:100px;font-size:0.75rem;font-weight:700;text-transform:uppercase;}
+.container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:0.65rem 1.4rem;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.875rem;cursor:pointer;text-decoration:none;transition:all 0.2s;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#c1121f;}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+.stat-card .n{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;margin-bottom:4px;}
+.stat-card .l{font-size:0.8rem;color:var(--muted);}
+.upload-zone{background:var(--surface);border:2px dashed var(--border);border-radius:16px;padding:2.5rem;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:2rem;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(230,57,70,0.05);}
+.upload-zone h3{font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;}
+.upload-zone p{color:var(--muted);font-size:0.875rem;}
+#file-input{display:none;}
+.loading{display:none;text-align:center;padding:2rem;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#result-card{display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:2rem;}
+.result-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.sev-badge{padding:4px 14px;border-radius:100px;font-family:'Space Mono',monospace;font-size:0.75rem;font-weight:700;}
+.badge-HIGH{background:rgba(230,57,70,0.15);color:#e63946;}
+.badge-MEDIUM{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.badge-LOW{background:rgba(46,204,113,0.15);color:#2ecc71;}
+.verdict-box{background:rgba(230,57,70,0.07);border-left:3px solid var(--accent);padding:0.75rem 1rem;border-radius:0 8px 8px 0;font-size:0.875rem;margin-bottom:1rem;}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1rem;}
+.result-item{background:rgba(255,255,255,0.03);border-radius:8px;padding:0.75rem;}
+.result-item .lbl{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+.result-item .val{font-size:0.875rem;font-weight:600;word-break:break-all;}
+.hash-block{background:rgba(255,255,255,0.03);border-radius:8px;padding:1rem;margin-bottom:1rem;}
+.hash-row{display:flex;gap:0.75rem;align-items:center;margin-bottom:5px;}
+.hash-lbl{min-width:55px;color:var(--muted);font-size:0.7rem;}
+.hash-val{font-family:'Space Mono',monospace;color:#a8d8ff;word-break:break-all;font-size:0.72rem;}
+.families-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;}
+.family-tag{background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:var(--accent);padding:3px 12px;border-radius:100px;font-size:0.8rem;font-weight:600;}
+.download-row{display:flex;gap:0.75rem;flex-wrap:wrap;}
+.scans-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.table-header h2{font-size:1rem;font-weight:700;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);}
+td{padding:0.85rem 1.25rem;border-bottom:1px solid rgba(30,37,53,0.5);font-size:0.875rem;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.sev-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+.dot-HIGH{background:#e63946;}.dot-MEDIUM{background:#f59e0b;}.dot-LOW{background:#2ecc71;}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);}
+.empty-state .icon{font-size:3rem;margin-bottom:1rem;}
+.flash{padding:0.75rem 1rem;border-radius:8px;margin-bottom:1.25rem;font-size:0.875rem;}
+.flash.success{background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);color:#2ecc71;}
+.flash.error{background:rgba(230,57,70,0.12);border:1px solid rgba(230,57,70,0.3);color:#e63946;}
+.upgrade-banner{background:linear-gradient(135deg,rgba(230,57,70,0.15),rgba(244,162,97,0.1));border:1px solid rgba(230,57,70,0.3);border-radius:12px;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.upgrade-banner p{font-size:0.9rem;font-weight:600;}
+.upgrade-banner span{color:var(--muted);font-size:0.8rem;}
+@media(max-width:768px){.stats{grid-template-columns:1fr 1fr;}.result-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">SOL<span>CY</span></a>
+  <div class="nav-right">
+    <span class="plan-badge">{{ plan.name }} Plan</span>
+    <a href="/pricing">Upgrade</a>
+    <a href="/logout">Sign Out</a>
+  </div>
+</nav>
+
+<div class="container" style="margin-top:2rem">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if user['plan'] == 'free' %}
+  <div class="upgrade-banner">
+    <div>
+      <p>Unlock VirusTotal, PDF reports, and unlimited scans</p>
+      <span>{{ user['scans_used'] }}/5 free scans used this month</span>
+    </div>
+    <a href="/pricing" class="btn btn-primary">Upgrade to Pro — $19/mo</a>
+  </div>
+  {% endif %}
+
+  <div class="stats">
+    <div class="stat-card"><div class="n">{{ scans|length }}</div><div class="l">Total Scans</div></div>
+    <div class="stat-card"><div class="n" style="color:#e63946">{{ scans|selectattr('severity','equalto','HIGH')|list|length }}</div><div class="l">High Risk</div></div>
+    <div class="stat-card"><div class="n" style="color:#f59e0b">{{ scans|selectattr('severity','equalto','MEDIUM')|list|length }}</div><div class="l">Medium Risk</div></div>
+    <div class="stat-card"><div class="n" style="color:#2ecc71">{{ scans|selectattr('severity','equalto','LOW')|list|length }}</div><div class="l">Low Risk</div></div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">🛡️</div>
+    <h3>Drop a file to analyze</h3>
+    <p>Any file type up to 50MB — results appear instantly below</p>
+    <input type="file" id="file-input" accept="*/*">
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="color:var(--muted);font-size:0.9rem">Analyzing file...</p>
+  </div>
+
+  <div id="result-card">
+    <div class="result-header">
+      <div style="flex:1">
+        <div id="result-filename" style="font-weight:700;font-size:1rem;margin-bottom:6px"></div>
+        <span id="result-badge" class="sev-badge"></span>
+      </div>
+    </div>
+    <div class="verdict-box" id="result-verdict"></div>
+    <div class="families-list" id="result-families"></div>
+    <div class="result-grid">
+      <div class="result-item"><div class="lbl">File Type</div><div class="val" id="res-type"></div></div>
+      <div class="result-item"><div class="lbl">Entropy</div><div class="val" id="res-entropy"></div></div>
+      <div class="result-item"><div class="lbl">Indicators</div><div class="val" id="res-indicators"></div></div>
+      <div class="result-item"><div class="lbl">VirusTotal</div><div class="val" id="res-vt"></div></div>
+    </div>
+    <div class="hash-block">
+      <div class="hash-row"><span class="hash-lbl">MD5</span><span class="hash-val" id="res-md5"></span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-1</span><span class="hash-val" id="res-sha1"></span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-256</span><span class="hash-val" id="res-sha256"></span></div>
+    </div>
+    <div class="download-row" id="download-row"></div>
+  </div>
+
+  <!-- Scan history -->
+  <div class="scans-table">
+    <div class="table-header">
+      <h2>Scan History</h2>
+    </div>
+    {% if scans %}
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Severity</th>
+          <th>Classification</th>
+          <th>VT Detections</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scan in scans %}
+        <tr>
+          <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ scan['filename'] }}</td>
+          <td>
+            <span class="sev-dot dot-{{ scan['severity'] }}"></span>{{ scan['severity'] }}
+          </td>
+          <td style="color:var(--muted);font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ scan['families'] or '—' }}</td>
+          <td>
+            {% if scan['vt_total'] %}
+              <span style="color:{% if scan['vt_malicious'] > 0 %}#e63946{% else %}#2ecc71{% endif %}">
+                {{ scan['vt_malicious'] }}/{{ scan['vt_total'] }}
+              </span>
+            {% else %}—{% endif %}
+          </td>
+          <td style="color:var(--muted);font-size:0.8rem">{{ scan['created_at'][:16] }}</td>
+          <td><a href="/scan/{{ scan['id'] }}" class="btn btn-outline" style="padding:4px 12px;font-size:0.75rem">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">🔍</div>
+      <p>No scans yet. Drop a file above to get started.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById('file-input').addEventListener('change', function(e) {
+  if (e.target.files[0]) uploadFile(e.target.files[0]);
+});
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+});
+
+async function uploadFile(file) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('result-card').style.display = 'none';
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const resp = await fetch('/scan', { method: 'POST', body: fd });
+    const data = await resp.json();
+    document.getElementById('loading').style.display = 'none';
+    if (data.error) { alert('Error: ' + data.error); return; }
+    document.getElementById('result-filename').textContent = file.name;
+    const badge = document.getElementById('result-badge');
+    badge.textContent = data.severity + ' RISK';
+    badge.className = 'sev-badge badge-' + data.severity;
+    document.getElementById('result-verdict').innerHTML = '<strong>' + data.verdict + '</strong><br>' + data.action;
+    document.getElementById('res-type').textContent = data.file_type;
+    document.getElementById('res-entropy').textContent = data.entropy.toFixed(2) + ' / 8.0' + (data.entropy > 7.2 ? ' ⚠' : '');
+    document.getElementById('res-indicators').textContent = data.indicators + ' found';
+    document.getElementById('res-vt').textContent = data.vt.total ? data.vt.malicious + '/' + data.vt.total + ' engines' : 'N/A (Free plan)';
+    document.getElementById('res-md5').textContent = data.hashes.md5;
+    document.getElementById('res-sha1').textContent = data.hashes.sha1;
+    document.getElementById('res-sha256').textContent = data.hashes.sha256;
+    const fl = document.getElementById('result-families');
+    fl.innerHTML = data.families.length
+      ? data.families.map(f => '<span class="family-tag">' + f + '</span>').join('')
+      : '<span style="color:var(--green);font-size:.875rem">✓ No malware family matched</span>';
+    const dr = document.getElementById('download-row');
+    dr.innerHTML = '<a href="/report/' + data.report_stem + '/html" class="btn btn-outline">Download HTML</a>';
+    if (data.pdf_ready) dr.innerHTML += '<a href="/report/' + data.report_stem + '/pdf" class="btn btn-primary">Download PDF</a>';
+    if (data.scan_id) dr.innerHTML += '<a href="/scan/' + data.scan_id + '" class="btn btn-outline">Full Details</a>';
+    document.getElementById('result-card').style.display = 'block';
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => location.reload(), 3000);
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    alert('Upload failed: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>

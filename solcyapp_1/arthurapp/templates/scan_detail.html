@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan Detail — SolCy</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080b12;--surface:#0f1420;--border:#1e2535;--accent:#e63946;--text:#e8eaf0;--muted:#6b7280;--green:#2ecc71;--yellow:#f59e0b;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);text-decoration:none;}
+.logo span{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:1.5rem;}
+.nav-right a{color:var(--muted);text-decoration:none;font-size:0.875rem;font-weight:600;}
+.container{max-width:1000px;margin:0 auto;padding:2rem 1.5rem;}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:0.875rem;margin-bottom:1.5rem;}
+.back:hover{color:var(--text);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.25rem;}
+.card h2{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.sev-banner{border-radius:12px;padding:1.5rem;margin-bottom:1.25rem;border-left:4px solid;}
+.sev-HIGH{background:rgba(230,57,70,0.1);border-color:#e63946;}
+.sev-MEDIUM{background:rgba(245,158,11,0.1);border-color:#f59e0b;}
+.sev-LOW{background:rgba(46,204,113,0.1);border-color:#2ecc71;}
+.verdict{font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;}
+.action{font-size:0.9rem;margin-bottom:0.5rem;}
+.detail{font-size:0.85rem;color:var(--muted);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.stat{background:rgba(255,255,255,0.03);border-radius:8px;padding:0.875rem;}
+.stat .lbl{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+.stat .val{font-size:0.9rem;font-weight:600;word-break:break-all;}
+.hash-row{display:flex;gap:0.75rem;align-items:center;margin-bottom:6px;}
+.hash-lbl{min-width:60px;color:var(--muted);font-size:0.72rem;}
+.hash-val{font-family:'Space Mono',monospace;color:#a8d8ff;word-break:break-all;font-size:0.72rem;}
+.family-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border);}
+.family-row:last-child{border-bottom:none;}
+.family-name{font-weight:600;font-size:0.9rem;}
+.conf-badge{padding:3px 10px;border-radius:100px;font-size:0.7rem;font-weight:700;}
+.conf-HIGH{background:rgba(230,57,70,0.15);color:#e63946;}
+.conf-MEDIUM{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.conf-LOW{background:rgba(46,204,113,0.15);color:#2ecc71;}
+.tag{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#e0c97f;font-family:'Space Mono',monospace;font-size:0.75rem;padding:3px 8px;border-radius:4px;display:inline-block;margin:3px;}
+.ioc-item{font-family:'Space Mono',monospace;font-size:0.78rem;color:#a8d8ff;display:block;margin-bottom:4px;}
+.btn{display:inline-flex;align-items:center;padding:0.6rem 1.2rem;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.875rem;cursor:pointer;text-decoration:none;transition:all 0.2s;border:none;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#c1121f;}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--accent);}
+.btn-row{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+@media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">SOL<span>CY</span></a>
+  <div class="nav-right"><a href="/dashboard">Dashboard</a><a href="/logout">Sign Out</a></div>
+</nav>
+<div class="container">
+  <a class="back" href="/dashboard">← Back to Dashboard</a>
+
+  <div class="sev-banner sev-{{ report.severity }}">
+    <div class="verdict">{{ report.executive_summary.verdict }}</div>
+    <div class="action">{{ report.executive_summary.action }}</div>
+    <div class="detail">{{ report.executive_summary.detail }}</div>
+  </div>
+
+  <div class="btn-row">
+    <a href="/report/{{ scan['id'] }}/html" class="btn btn-outline">Download HTML Report</a>
+    {% if plan.name != 'Free' %}
+    <a href="/report/{{ scan['id'] }}/pdf" class="btn btn-primary">Download PDF Report</a>
+    {% else %}
+    <a href="/pricing" class="btn btn-outline">Upgrade for PDF Reports</a>
+    {% endif %}
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>File Information</h2>
+      <div class="grid2" style="gap:0.75rem">
+        <div class="stat"><div class="lbl">Filename</div><div class="val">{{ report.filename }}</div></div>
+        <div class="stat"><div class="lbl">Size</div><div class="val">{{ report.size }}</div></div>
+        <div class="stat"><div class="lbl">Type</div><div class="val">{{ report.magic_type }}</div></div>
+        <div class="stat"><div class="lbl">Entropy</div><div class="val">{{ report.entropy }}/8.0{% if report.entropy > 7.2 %} ⚠{% endif %}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>File Hashes</h2>
+      <div class="hash-row"><span class="hash-lbl">MD5</span><span class="hash-val">{{ report.hashes.md5 }}</span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-1</span><span class="hash-val">{{ report.hashes.sha1 }}</span></div>
+      <div class="hash-row"><span class="hash-lbl">SHA-256</span><span class="hash-val">{{ report.hashes.sha256 }}</span></div>
+    </div>
+  </div>
+
+  {% if report.virustotal and report.virustotal.found %}
+  <div class="card">
+    <h2>VirusTotal — {{ report.virustotal.malicious }}/{{ report.virustotal.total }} Engines Detected</h2>
+    {% if report.virustotal.top_names %}<p style="margin-bottom:0.75rem;font-size:0.9rem"><strong>Names:</strong> {{ report.virustotal.top_names | join(', ') }}</p>{% endif %}
+    {% if report.virustotal.tags %}<p style="font-size:0.875rem;color:var(--muted)"><strong>Tags:</strong> {{ report.virustotal.tags | join(', ') }}</p>{% endif %}
+    <a href="{{ report.virustotal.vt_link }}" target="_blank" style="display:inline-block;margin-top:0.75rem;font-size:0.85rem;color:#a8d8ff">View full report on VirusTotal ↗</a>
+  </div>
+  {% endif %}
+
+  {% if report.malware_classification %}
+  <div class="card">
+    <h2>Malware Classification</h2>
+    {% for f in report.malware_classification %}
+    <div class="family-row">
+      <div>
+        <div class="family-name">{{ f.family }}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ f.indicator_count }} indicators — {{ f.matched_categories | join(', ') }}</div>
+      </div>
+      <span class="conf-badge conf-{{ f.confidence }}">{{ f.confidence }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Behavior Summary</h2>
+    <p style="font-size:0.9rem;line-height:1.8;color:#ccc">{{ report.behavior_summary }}</p>
+  </div>
+
+  {% if report.iocs %}
+  <div class="card">
+    <h2>Extracted IOCs</h2>
+    {% for kind, vals in report.iocs.items() %}
+    <div style="margin-bottom:1rem">
+      <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">{{ kind }}</div>
+      {% for v in vals[:10] %}<span class="ioc-item">{{ v }}</span>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report.obfuscation %}
+  <div class="card">
+    <h2>Obfuscation Detected</h2>
+    {% for o in report.obfuscation %}
+    <p style="font-size:0.875rem;padding:0.4rem 0;color:#e0c97f">⚠ {{ o }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report.suspicious_strings %}
+  <div class="card">
+    <h2>Suspicious Strings</h2>
+    {% for cat, patterns in report.suspicious_strings.items() %}
+    <div style="margin-bottom:1rem">
+      <div style="font-size:0.8rem;font-weight:700;margin-bottom:6px">{{ cat }}</div>
+      {% for p in patterns %}<span class="tag">{{ p }}</span>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>
